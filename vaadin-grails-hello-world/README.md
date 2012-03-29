@@ -8,6 +8,6 @@ from Ondřej Kvasnovský.
 Changes
 -------
 
-* Mar 29, 2012 - Integration of the Doamin Class validation.
-* Mar 25, 2012 - You can edit users with form (using of com.vaadin.ui.Form and com.vaadin.data.util.BeanItem).
+* Mar 29, 2012 - Integration of the Grails validation (using of domain contraints).
+* Mar 25, 2012 - You can edit users with a form (using of com.vaadin.ui.Form and com.vaadin.data.util.BeanItem).
 
