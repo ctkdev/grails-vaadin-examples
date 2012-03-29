@@ -1,13 +1,30 @@
+/*
+ * Copyright 2012 Steffen Förster
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package helloworld
+
+import java.text.MessageFormat
 
 import com.vaadin.Application
 import com.vaadin.data.Property
 import com.vaadin.data.util.BeanContainer
 import com.vaadin.data.util.BeanItem
 import com.vaadin.ui.Button
+import com.vaadin.ui.Field
 import com.vaadin.ui.Form
 import com.vaadin.ui.HorizontalLayout;
-import com.vaadin.ui.Label
 import com.vaadin.ui.Layout
 import com.vaadin.ui.Table
 import com.vaadin.ui.Window
@@ -24,10 +41,12 @@ class HelloWorldApplication extends Application {
 	UserService userService
 	Form form
 	Table table
+	def propertyIds = ["firstname", "lastname"]
+	def requiredProperties = propertyIds
 
 	@Override
 	public void init() {
-		this.userService = getBean(UserService.class)
+		userService = getBean(UserService.class)
 
 		Window window = new Window("Hello world!")
 		setMainWindow(window)
@@ -44,24 +63,23 @@ class HelloWorldApplication extends Application {
 	}
 
 	private def addTable(Layout layout) {
-		this.table = new Table()
-		this.table.selectable = true
-		this.table.immediate = true
-		this.table.addListener([valueChange : {event -> showUserForm()}]
-		as Property.ValueChangeListener)
+		table = new Table()
+		table.selectable = true
+		table.immediate = true
+		table.addListener([valueChange : {event -> showUserForm()}]
+			as Property.ValueChangeListener)
 
-		layout.addComponent(this.table)
+		layout.addComponent(table)
 	}
 
 	private def addForm(Layout layout) {
-		this.form = new Form()
-		this.form.caption = i18n("form.user.title")
+		form = new Form()
+		form.caption = i18n("form.user.title")
 		enableForm(false)
 		Button btnSave = new Button(i18n("btn.save"),
 				[buttonClick : {event -> saveUser()}] as ClickListener)
-		this.form.footer.addComponent(btnSave)
-
-		layout.addComponent(this.form)
+		form.footer.addComponent(btnSave)
+		layout.addComponent(form)
 	}
 
 	private def listUsers() {
@@ -69,34 +87,61 @@ class HelloWorldApplication extends Application {
 		BeanContainer<Integer, User> container = new BeanContainer<Integer, User>(User.class)
 		container.setBeanIdProperty("id")
 		container.addAll(users)
-		this.table.containerDataSource = container
+		table.containerDataSource = container
 		// hide all special domain class properties
-		this.table.visibleColumns = ["firstname", "lastname"]as Object[]
+		table.visibleColumns = propertyIds as Object[]
 	}
 
 	private def showUserForm() {
-		if (this.table.value == null) {
+		if (table.value == null) {
 			enableForm(false)
 		}
 		else {
 			enableForm(true)
-			User user = User.get(this.table.value)
-			this.form.itemDataSource = new BeanItem(user)
+			User user = User.get(table.value)
+			form.itemDataSource = new BeanItem(user)
 			// hide all special domain class properties
-			this.form.visibleItemProperties = ["firstname", "lastname"]
+			form.visibleItemProperties = propertyIds
+			addDomainValidators(user)
+			setRequired()
 		}
 	}
 
 	private def saveUser() {
-		User user = form.itemDataSource.bean
-		this.userService.update(user)
-		listUsers()
+		if (form.isValid()) {
+			User user = form.itemDataSource.bean
+			userService.update(user)
+			listUsers()
+		}
 	}
 	
 	private def enableForm(enable) {
 		// I think 'form.visible' is only a CSS property on the client
 		// so we have to disable all listeners with the property 'form.enabled'
-		this.form.visible = enable 
-		this.form.enabled = enable 
+		form.visible = enable 
+		form.enabled = enable 
+	}
+	
+	/**
+	 * Adds to each field a DomainPropertyValidator. This validator uses the domain object to validate
+	 * a property.
+	 */
+	private def addDomainValidators(user) {
+		propertyIds.each {p ->
+			Field field = this.form.getField(p)
+			field.addValidator(new DomainPropertyValidator(domain:user, service:this.userService, propertyId:p))
+		}
+	}
+	
+	/**
+	 * Vaadin doesn't call a validator for an empty field. So we have to set {@code required=true} for all fields
+	 * with a contraint {@code blank:false}.
+	 */
+	private def setRequired() {
+		requiredProperties.each {p ->
+			Field field = this.form.getField(p)
+			field.required = true
+			field.requiredError = MessageFormat.format(i18n("blank.message"))
+		}
 	}
 }
