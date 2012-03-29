@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Steffen Förster
+ * Copyright 2012 Steffen FÃ¶rster
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import com.vaadin.data.Validator.InvalidValueException
 /**
  * Special validator which uses a domain object to validate a property value.
  *  
- * @author Steffen Förster
+ * @author Steffen FÃ¶rster
  */
 class DomainPropertyValidator implements Validator {
 

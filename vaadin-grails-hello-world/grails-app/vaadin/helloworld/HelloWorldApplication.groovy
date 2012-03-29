@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Steffen Förster
+ * Copyright 2012 Steffen FÃ¶rster
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import com.vaadin.ui.Button.ClickListener
  * This example demonstrates the connection between Grails domain classes
  * and table and form components.
  * 
- * @author Steffen Förster
+ * @author Steffen FÃ¶rster
  */
 class HelloWorldApplication extends Application {
 
